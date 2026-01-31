@@ -127,10 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Execution.cpp" />
     <ClCompile Include="Processes.cpp" />
     <ClCompile Include="Process_Monitor_Project.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Execution.h" />
     <ClInclude Include="Processes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
