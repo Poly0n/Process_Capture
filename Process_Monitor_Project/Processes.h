@@ -3,6 +3,7 @@
 #include<string>
 #include<vector>
 #include <windows.h>
+#include <TlHelp32.h>
 #include "Pdh.h"
 
 struct Process {
@@ -21,6 +22,7 @@ public:
 	~Processes();
 	void execute();
 private:
+	bool breakLoop = false;
 	bool cpuInitialized = false;
 	std::vector<Process> processSnapshot;
 	PDH_HQUERY cpuQuery;
