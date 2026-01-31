@@ -268,7 +268,7 @@ void Processes::executeCommand(userCommand com) {
 		std::cout << "\tkill (pid)\tTerminates Specified Process." << std::endl;
 		std::cout << "\tfind (name.exe)\tFinds Processes PID (case-sensitive)." << std::endl;
 		std::cout << "\trefresh\t\tRefreshes The Screen To Update Results. This Also Can Be Used To Undo Filtered Results." << std::endl;
-		std::cout << "\tfilter\t\tFilters Processes To Only Display Processes Specified By The User." << std::endl;
+		std::cout << "\tfilter (name.exe) Filters Processes To Only Display Processes Specified By The User." << std::endl;
 		std::cout << "\tpath (pid)\tShows The Full File Path Of A Running Process." << std::endl;
 		std::cout << "\tq\t\tQuits Application." << std::endl;
 		waitForEnter();
