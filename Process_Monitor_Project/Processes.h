@@ -1,10 +1,9 @@
 #pragma once
-#include "Execution.h"
-#include <iostream>
-#include <string>
-#include <vector>
-#include <TlHelp32.h>
-#include <Pdh.h>
+#include<iostream>
+#include<string>
+#include<vector>
+#include <windows.h>
+#include "Pdh.h"
 
 struct Process {
 	int pid;
@@ -21,12 +20,9 @@ class Processes
 public:
 	~Processes();
 	void execute();
-	Execution checkExecution;
 private:
-	bool breakLoop = false;
 	bool cpuInitialized = false;
 	std::vector<Process> processSnapshot;
-	std::vector<Process> filteredSnapsot;
 	PDH_HQUERY cpuQuery;
 	PDH_HCOUNTER cpuTotal;
 	double cpuUsage;
@@ -34,18 +30,19 @@ private:
 
 	void GetProcesses();
 	void print();
-	void filteredPrint();
 	void cpuInit();
 	void GetCurrentCPUUsage();
 	void GetCurrentMemoryUsage();
 	void ParseUserInput(const std::string& input);
 	void executeCommand(userCommand com);
-	void executeWordCommands(std::string& command, std::string& value);
 	void waitForEnter();
 	void killProcess(int processID);
-	std::string findPath(int processID);
-	bool findProcess(const std::wstring& processName);
+	bool findProcess(std::wstring& processName);
 
 	bool findPID(int processID);
+	bool isNumber(const std::string& number) const;
+	bool checkCommand(const std::string& input) const;
+
+	std::wstring stringToWString(const std::string& str);
 };
 

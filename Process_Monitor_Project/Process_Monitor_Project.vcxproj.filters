@@ -21,15 +21,9 @@
     <ClCompile Include="Processes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Execution.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Processes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Execution.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
