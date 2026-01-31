@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cwchar>
 #include <Pdh.h>
+#include "Execution.h"
 
 #pragma comment(lib, "pdh.lib")
 
@@ -30,16 +31,11 @@ void Processes::waitForEnter() {
 	}
 }
 
-bool Processes::checkCommand(const std::string& input) const {
-	return input == "help" || input == "refresh" 
-		|| input == "q" || input == "Q";
-}
-
 bool Processes::findPID(int processID) {
 	for (const auto& proc : processSnapshot) {
 		if (proc.pid == processID) {
 			std::wcout << L"\n\t[+] PID Found: " << processID
-				<< L" " << "\n\tProcess Name: [" << proc.processName << 
+				<< L" " << "\n\tProcess Name: [" << proc.processName <<
 				"]" << std::endl;
 			waitForEnter();
 			return true;
@@ -47,83 +43,39 @@ bool Processes::findPID(int processID) {
 	}
 
 	std::cout << "[-] Couldn't find PID :(" << std::endl;
-	Sleep(1000);
+	waitForEnter();
 	return false;
 }
 
-void Processes::execute() { 
-	
-	std::string userInput;
+void Processes::execute() {
 
+	std::string userInput;
+	cpuInit();
 	std::cout << "Process Monitor Running... Press 'q' to quit" << std::endl;
 	Sleep(2000);
 
 	while (!breakLoop) {
-		cpuInit();
+
 		GetProcesses();
-		print();
+		if (filteredSnapsot.empty())
+			print();
+		else
+			filteredPrint();
 
 		std::cout << ">";
 		std::getline(std::cin, userInput);
 
 		ParseUserInput(userInput);
 	}
-	 
-	return; 
+
+	return;
 }
 
-bool Processes::isNumber(const std::string& number) const {
-
-	if (number.empty()) {
-		return false;
-	}
-
-	if (number.length() > 10) {
-		return false;
-	}
-
-	for (auto a : number) {
-		if (!std::isdigit(static_cast<unsigned char>(a))) {
-			return false;
-		}
-	}
-
-	if (number.length() > 1 && number[0] == '0') {
-		return false;
-	}
-
-	try {
-		unsigned long value = std::stoul(number);
-		if (value > 65535)
-			return false;
-	}
-	catch (...) {
-		return false;
-	}
-
-	return true;
-}
-
-std::wstring Processes::stringToWString(const std::string& str) {
-	if (str.empty()) return L"";
-
-	int size_needed = MultiByteToWideChar(CP_UTF8, 0,
-		str.c_str(), (int)str.size(),
-		NULL, 0);
-	if (size_needed <= 0) return L"";
-
-	std::wstring wstr(size_needed, 0);
-	MultiByteToWideChar(CP_UTF8, 0,
-		str.c_str(), (int)str.size(),
-		&wstr[0], size_needed);
-	return wstr;
-}
-
-bool Processes::findProcess(std::wstring& processName) {
+bool Processes::findProcess(const std::wstring& processName) {
 	for (const auto& proc : processSnapshot) {
 		if (_wcsicmp(proc.processName.c_str(), processName.c_str()) == 0) {
-			std::wcout << "\n\t[+] Found Process: \n\tPID: [" 
-				<< proc.pid << "] \n\tProcess Name:[" 
+			std::wcout << "\n\t[+] Found Process: \n\tPID: ["
+				<< proc.pid << "] \n\tProcess Name:["
 				<< proc.processName << "]" << std::endl;
 			waitForEnter();
 			return true;
@@ -131,12 +83,14 @@ bool Processes::findProcess(std::wstring& processName) {
 	}
 
 	std::cout << "[-] Couldn't Find Process" << std::endl;
+	waitForEnter();
 	return false;
 }
 
 void Processes::ParseUserInput(const std::string& input) {
+
 	if (input.empty()) return;
-	
+
 	size_t tokenFind = input.find(' ');
 	std::string com;
 	std::string value;
@@ -149,32 +103,26 @@ void Processes::ParseUserInput(const std::string& input) {
 		value = input.substr(tokenFind + 1);
 	}
 
-	if (com == "find") {
-		if (value.empty()) {
-			std::cerr << "[!] find requires a process name\n";
-			waitForEnter();
-			return;
-		}
-
-		std::wstring wstringValue = stringToWString(value);
-		findProcess(wstringValue);
+	if (checkExecution.wordCommands(com)) {
+		executeWordCommands(com, value);
 		return;
 	}
 
-	if (checkCommand(com)) {
+
+	if (checkExecution.oneLinerCommand(com)) {
 		userCommand usrCom;
 		usrCom.command = com;
 		executeCommand(usrCom);
 		return;
 	}
-	
+
 	if (value.empty()) {
 		std::cerr << "[!] You Didn't Enter A Value" << std::endl;
 		waitForEnter();
 		return;
 	}
 
-	if (!isNumber(value)) {
+	if (!checkExecution.isNumber(value)) {
 		std::cerr << "[!] The value you entered isn't a number" << std::endl;
 		waitForEnter();
 		return;
@@ -187,6 +135,47 @@ void Processes::ParseUserInput(const std::string& input) {
 	executeCommand(usrCom);
 
 	return;
+}
+
+void Processes::executeWordCommands(std::string& command, std::string& value) {
+	if (command == "find") {
+		if (value.empty()) {
+			std::cerr << "[!] find Requires A Process Name\n";
+			waitForEnter();
+			return;
+		}
+
+		std::wstring wstringValue = checkExecution.stringToWString(value);
+		findProcess(wstringValue);
+		return;
+	}
+		
+	else if (command == "filter") {
+		if (value.empty()) {
+			std::cerr << "[!] filter Requires A Process Name\n";
+			waitForEnter();
+			return;
+		}
+
+		filteredSnapsot.clear();
+		filteredSnapsot.reserve(1000);
+
+		std::wstring wstringValue = checkExecution.stringToWString(value);
+		for (const auto& proc : processSnapshot) {
+			if (_wcsicmp(proc.processName.c_str(), wstringValue.c_str()) == 0) {
+				filteredSnapsot.push_back(proc);
+			}
+		}
+		if (filteredSnapsot.empty()) {
+			std::cout << "[-] Couldn't Find Process" << std::endl;
+			filteredSnapsot.clear();
+			waitForEnter();
+			return;
+		}
+
+		filteredPrint();
+		return;
+	}
 }
 
 void Processes::killProcess(int processID) {
@@ -203,11 +192,43 @@ void Processes::killProcess(int processID) {
 	}
 	else {
 		std::cerr << "[-] TerminateProcess Failed With Error: " << GetLastError() << std::endl;
+		CloseHandle(hProcess);
 		return;
 	}
 	CloseHandle(hProcess);
 	return;
 }
+
+std::string Processes::findPath(int processID) {
+	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processID);
+
+	if (hProcess == NULL) {
+		int errorCode = GetLastError();
+		if (errorCode = ERROR_ACCESS_DENIED) {
+			std::cerr << "[-] Unable To Access This Process Due To Privaledges, Windows Doesn't Like It." << std::endl;
+			waitForEnter();
+			return {};
+		}
+		std::cerr << "[-] OpenProcess Failed With Error: " << GetLastError() << std::endl;
+		waitForEnter();
+		return {};
+	}
+
+	char path[MAX_PATH];
+	DWORD size = MAX_PATH;
+
+	if (!QueryFullProcessImageNameA(hProcess, 0, path, &size)) {
+		std::cerr << "[-] QueryFullProcessImageNameA Failed: "
+			<< GetLastError() << "\n";
+		CloseHandle(hProcess);
+		waitForEnter();
+		return {};
+	}
+
+	CloseHandle(hProcess);
+	return std::string(path, size);
+}
+
 void Processes::executeCommand(userCommand com) {
 
 	if (com.command == "pid") {
@@ -224,17 +245,37 @@ void Processes::executeCommand(userCommand com) {
 			return;
 		}
 	}
+	else if (com.command == "path") {
+		// find full path of executable
+		if (findPID(com.value)) {
+			std::string fullPath = findPath(com.value);
+			if (fullPath.empty()) {
+				return;
+			}
+			else {
+				std::cout << "\t[+]Full Path: " << fullPath << std::endl;
+				waitForEnter();
+				return;
+			}
+		}
+		else {
+			return;
+		}
+	}
 	else if (com.command == "help") {
-		std::cout << "\n\tCommands:" << std::endl;
+		std::cout << "\n\tCommands:\n" << std::endl;
 		std::cout << "\tpid (number)\tRetrieves Program Name Associated With The Process ID." << std::endl;
-		std::cout << "\tkill (pid)\tTerminates Specified Process" << std::endl;
-		std::cout << "\tfind (name.exe)\tFinds Processes PID" << std::endl;
-		std::cout << "\trefresh\t\tRefreshes The Screen To Update Results." << std::endl;
+		std::cout << "\tkill (pid)\tTerminates Specified Process." << std::endl;
+		std::cout << "\tfind (name.exe)\tFinds Processes PID (case-sensitive)." << std::endl;
+		std::cout << "\trefresh\t\tRefreshes The Screen To Update Results. This Also Can Be Used To Undo Filtered Results." << std::endl;
+		std::cout << "\tfilter\t\tFilters Processes To Only Display Processes Specified By The User." << std::endl;
+		std::cout << "\tpath (pid)\tShows The Full File Path Of A Running Process." << std::endl;
 		std::cout << "\tq\t\tQuits Application." << std::endl;
 		waitForEnter();
 		return;
 	}
 	else if (com.command == "refresh") {
+		filteredSnapsot.clear();
 		return;
 	}
 	else if (com.command == ("q") || com.command == ("Q")) {
@@ -284,7 +325,7 @@ void Processes::GetCurrentCPUUsage() {
 
 	status = PdhGetFormattedCounterValue(cpuTotal, PDH_FMT_DOUBLE, NULL, &counterVal);
 	if (status != ERROR_SUCCESS) {
-		std::cerr << "[-] PdhGetFormattedCounterValue failed: " << status << std::endl;
+		printf("[-] PdhGetFormattedCounterValue failed: %.08x", status);
 		return;
 	}
 
@@ -314,8 +355,11 @@ void Processes::GetProcesses() {
 	BOOL hResult;
 
 	hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if (INVALID_HANDLE_VALUE == hSnapshot)
-		throw std::runtime_error("[-] hSnapshot has invalid handle value");
+	if (INVALID_HANDLE_VALUE == hSnapshot) {
+		std::cerr << "[-] CreateToolhelp32Snapshot Failed With Error: " << GetLastError() << std::endl;
+		waitForEnter();
+		return;
+	}
 
 	pe.dwSize = sizeof(PROCESSENTRY32W);
 
@@ -345,9 +389,26 @@ void Processes::print() {
 	GetCurrentMemoryUsage();
 	GetCurrentCPUUsage();
 
-	for (int i = 0; i < processSnapshot.size(); ++i) {
+	for (size_t i = 0; i < processSnapshot.size(); ++i) {
 		std::cout << "Process ID: [" << processSnapshot[i].pid << "]";
 		std::wcout << "\tProcess Name: [" << processSnapshot[i].processName << "]\n" << std::endl;
+	}
+
+	std::cout << "-----------------------------------" << std::endl;
+	std::cout << "CPU Usage: " << cpuUsage << "%" << std::endl;
+	std::cout << "Memory Usage: " << memoryUsage << " GB" << std::endl;
+	std::cout << "Total Processes: " << processSnapshot.size() << "\n" << std::endl;
+}
+
+void Processes::filteredPrint() {
+
+	system("cls");
+	GetCurrentMemoryUsage();
+	GetCurrentCPUUsage();
+
+	for (size_t i = 0; i < filteredSnapsot.size(); ++i) {
+		std::cout << "Process ID: [" << filteredSnapsot[i].pid << "]";
+		std::wcout << "\tProcess Name: [" << filteredSnapsot[i].processName << "]\n" << std::endl;
 	}
 
 	std::cout << "-----------------------------------" << std::endl;
