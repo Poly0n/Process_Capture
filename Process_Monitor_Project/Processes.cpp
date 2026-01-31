@@ -47,6 +47,7 @@ bool Processes::findPID(int processID) {
 	}
 
 	std::cout << "[-] Couldn't find PID :(" << std::endl;
+	Sleep(1000);
 	return false;
 }
 
