@@ -31,4 +31,4 @@ git clone https://github.com/Poly0n/Process_Capture
 cd Process_Capture
 
 # Build the project
-g++ -std=c++20 -o ProcessMonitor Process_Monitor_Project.cpp Processes.cpp -lpdh -lpsapi
+g++ -std=c++20 -o ProcessMonitor Process_Monitor_Project.cpp Processes.cpp Execution.cpp -lpdh -lpsapi
