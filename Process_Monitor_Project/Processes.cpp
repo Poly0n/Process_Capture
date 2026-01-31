@@ -57,21 +57,15 @@ void Processes::execute() {
 	std::cout << "Process Monitor Running... Press 'q' to quit" << std::endl;
 	Sleep(2000);
 
-	while (true) {
+	while (!breakLoop) {
 		cpuInit();
 		GetProcesses();
 		print();
 
-		if ((GetAsyncKeyState('Q') && 0x8000 || GetAsyncKeyState('q') & 0x8000)) {
-			std::cout << "\nExiting..." << std::endl;
-			break;
-		}
 		std::cout << ">";
 		std::getline(std::cin, userInput);
 
 		ParseUserInput(userInput);
-
-		Sleep(3000);
 	}
 	 
 	return; 
@@ -126,7 +120,7 @@ std::wstring Processes::stringToWString(const std::string& str) {
 
 bool Processes::findProcess(std::wstring& processName) {
 	for (const auto& proc : processSnapshot) {
-		if (proc.processName == processName) {
+		if (_wcsicmp(proc.processName.c_str(), processName.c_str()) == 0) {
 			std::wcout << "\n\t[+] Found Process: \n\tPID: [" 
 				<< proc.pid << "] \n\tProcess Name:[" 
 				<< proc.processName << "]" << std::endl;
@@ -143,43 +137,55 @@ void Processes::ParseUserInput(const std::string& input) {
 	if (input.empty()) return;
 	
 	size_t tokenFind = input.find(' ');
+	std::string com;
+	std::string value;
 
-	std::string com = input.substr(0, tokenFind);
-	std::string value = input.substr(tokenFind + 1);
+	if (tokenFind == std::string::npos) {
+		com = input;
+	}
+	else {
+		com = input.substr(0, tokenFind);
+		value = input.substr(tokenFind + 1);
+	}
 
-	// Find execution early due to wstring comparison issues with the process names
-	if (com == "find" && !value.empty()) {
-		
+	if (com == "find") {
+		if (value.empty()) {
+			std::cerr << "[!] find requires a process name\n";
+			waitForEnter();
+			return;
+		}
+
 		std::wstring wstringValue = stringToWString(value);
 		findProcess(wstringValue);
 		return;
 	}
 
-	if (!checkCommand(com) && value.empty()) {
-		std::cerr << "[!] You didn't enter a value!" << std::endl;
+	if (checkCommand(com)) {
+		userCommand usrCom;
+		usrCom.command = com;
+		executeCommand(usrCom);
 		return;
 	}
 	
-	if (!checkCommand(com) && !isNumber(value)) {
-		std::cerr << "[!] The value you inputed isn't a number";
+	if (value.empty()) {
+		std::cerr << "[!] You Didn't Enter A Value" << std::endl;
+		waitForEnter();
 		return;
 	}
 
-	if (isNumber(com)) {
-		std::cerr << "[!] Invalid command";
+	if (!isNumber(value)) {
+		std::cerr << "[!] The value you entered isn't a number" << std::endl;
+		waitForEnter();
 		return;
 	}
 
 	userCommand usrCom;
 	usrCom.command = com;
-	if (!checkCommand(com)) {
-		usrCom.value = std::stoi(value);
-	}
+	usrCom.value = std::stoi(value);
 
 	executeCommand(usrCom);
 
 	return;
-	
 }
 
 void Processes::killProcess(int processID) {
@@ -221,17 +227,23 @@ void Processes::executeCommand(userCommand com) {
 		std::cout << "\n\tCommands:" << std::endl;
 		std::cout << "\tpid (number)\tRetrieves Program Name Associated With The Process ID." << std::endl;
 		std::cout << "\tkill (pid)\tTerminates Specified Process" << std::endl;
-		std::cout << "\tfind (name.exe)\tFinds Processes PID (case-sensitive)" << std::endl;
+		std::cout << "\tfind (name.exe)\tFinds Processes PID" << std::endl;
 		std::cout << "\trefresh\t\tRefreshes The Screen To Update Results." << std::endl;
 		std::cout << "\tq\t\tQuits Application." << std::endl;
 		waitForEnter();
 		return;
 	}
-	else if (com.command == "refresh" || com.command == ("q") || com.command == ("Q")) {
+	else if (com.command == "refresh") {
+		return;
+	}
+	else if (com.command == ("q") || com.command == ("Q")) {
+		std::cout << "\nExiting..." << std::endl;
+		breakLoop = true;
 		return;
 	}
 	else {
 		std::cerr << "[!] The command you entered '" << com.command << "' doesn't exist. Please try again." << std::endl;
+		waitForEnter();
 	}
 
 	return;
@@ -287,7 +299,7 @@ void Processes::GetCurrentMemoryUsage() {
 	GlobalMemoryStatusEx(&memInfo);
 	convert = memInfo.ullTotalPhys - memInfo.ullAvailPhys;
 
-	memoryUsage = convert / 1073741824;
+	memoryUsage = static_cast<double>(convert) / (1024.0 * 1024 * 1024);
 
 	return;
 }
@@ -328,7 +340,6 @@ void Processes::GetProcesses() {
 }
 
 void Processes::print() {
-	Sleep(50);
 	system("cls");
 	GetCurrentMemoryUsage();
 	GetCurrentCPUUsage();
