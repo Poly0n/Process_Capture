@@ -1,6 +1,6 @@
 #  Windows Procces Capture
 
-As i'm sure all us Windows Users know, Microsoft doesn't care about performance or ease of use these days.
+As i'm sure all us Windows Users know, Microsoft hasn't done well in performance or ease of use these days.
 So I decided to take make a alternative that strives to give users insight into their computer resources
 and running processes without the slow and janky task manager. This app is a work-in-progress.
 
