@@ -10,7 +10,7 @@ This program captures your computer's activity like a snapshot. To get full use 
 - help           *Displays Commands*
 - pid (number)   *Retrieves Program Name Associated With The Process ID.*
 - kill (pid)     *Terminates Specified Process*
-- find (name.exe)  *Finds Processes PID (case-sensitive)*
+- find (name.exe)  *Finds Processes PID*
 - refresh         *Refreshes The Screen To Update Results.*
 - q  *Quits Application*
 
