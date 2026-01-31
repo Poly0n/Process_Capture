@@ -3,6 +3,7 @@
 #include<string>
 #include<vector>
 #include <windows.h>
+#include <TlHelp32.h>
 #include "Pdh.h"
 
 struct Process {
