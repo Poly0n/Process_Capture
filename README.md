@@ -11,7 +11,9 @@ This program captures your computer's activity like a snapshot. To get full use 
 - pid (number)   *Retrieves Program Name Associated With The Process ID.*
 - kill (pid)     *Terminates Specified Process*
 - find (name.exe)  *Finds Processes PID*
-- refresh         *Refreshes The Screen To Update Results.*
+- filter          *Filters Processes To Only Display Processes Specified By The User.*
+- path (pid)      *Shows The Full File Path Of A Running Process.*
+- refresh         *Refreshes The Screen To Update Results. Helps resetting your filter*
 - q  *Quits Application*
 
 ##  Preview
