@@ -244,7 +244,7 @@ void Processes::cpuInit() {
 			std::cerr << "[-] Failed to open PDH query" << std::endl;
 			return;
 		}
-		status = PdhAddCounter(cpuQuery, L"\\Processor(_Total)\\% Processor Time", NULL, &cpuTotal);
+		status = PdhAddCounterW(cpuQuery, L"\\Processor(_Total)\\% Processor Time", NULL, &cpuTotal);
 		if (status != ERROR_SUCCESS) {
 			std::cerr << "[-] Failed to add PDH counter" << std::endl;
 			PdhCloseQuery(cpuQuery);
@@ -296,7 +296,7 @@ void Processes::GetProcesses() {
 	processSnapshot.clear();
 	processSnapshot.reserve(1000);
 	HANDLE hSnapshot;
-	PROCESSENTRY32 pe;
+	PROCESSENTRY32W pe;
 	int counter = 0;
 	BOOL hResult;
 
@@ -304,7 +304,7 @@ void Processes::GetProcesses() {
 	if (INVALID_HANDLE_VALUE == hSnapshot)
 		throw std::runtime_error("[-] hSnapshot has invalid handle value");
 
-	pe.dwSize = sizeof(PROCESSENTRY32);
+	pe.dwSize = sizeof(PROCESSENTRY32W);
 
 	hResult = Process32FirstW(hSnapshot, &pe);
 
@@ -315,7 +315,7 @@ void Processes::GetProcesses() {
 		proc.processName = pe.szExeFile;
 		processSnapshot.push_back(proc);
 
-		hResult = Process32Next(hSnapshot, &pe);
+		hResult = Process32NextW(hSnapshot, &pe);
 	}
 
 	if (processSnapshot.size() >= MAX_PROCESSES) {
