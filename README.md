@@ -19,7 +19,7 @@ This program captures your computer's activity like a snapshot. To get full use 
 <img width="668" height="506" alt="image" src="https://github.com/user-attachments/assets/4573bd6c-4811-4ee2-a960-27d2875fe0a4" />
 
 ### Prerequisites
-- C++17 compatible compiler (GCC, Clang, MSVC)
+- C++20 compatible compiler (GCC, Clang, MSVC)
 
 ### Installation
 
