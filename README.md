@@ -7,6 +7,7 @@ and running processes without the slow and janky task manager. This app is a wor
 This program captures your computer's activity like a snapshot. To get full use out of it, please use the following commands:
 
 ##  Commands
+- help           *Displays Commands*
 - pid (number)   *Retrieves Program Name Associated With The Process ID.*
 - kill (pid)     *Terminates Specified Process*
 - find (name.exe)  *Finds Processes PID (case-sensitive)*
