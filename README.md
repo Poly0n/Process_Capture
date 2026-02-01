@@ -14,6 +14,7 @@ This program captures your computer's activity like a snapshot. To get full use 
 - find (name.exe)  *Finds Processes PID*
 - filter (name.exe)          *Filters Processes To Only Display Processes Specified By The User.*
 - path (pid)      *Shows The Full File Path Of A Running Process.*
+- info (pid)      *Gets Process's Use Time, CPU Usage, And Parent Process*
 - refresh         *Refreshes The Screen To Update Results. Helps resetting your filter*
 - q  *Quits Application*
 
