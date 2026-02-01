@@ -8,6 +8,13 @@
 #include <Pdh.h>
 #include "Execution.h"
 
+/*
+
+	PROBLEMS:
+		when printing out filtered content you can still access other processes not listed (may not fix because who cares tbh)
+
+*/
+
 #pragma comment(lib, "pdh.lib")
 
 // Prevent possible overflow
@@ -45,6 +52,15 @@ bool Processes::findPID(int processID) {
 	std::cout << "[-] Couldn't find PID :(" << std::endl;
 	waitForEnter();
 	return false;
+}
+
+std::wstring Processes::getName(int processID)	{
+	for (const auto& proc : processSnapshot) {
+		if (proc.pid == processID) {
+			return proc.processName;
+		}
+	}
+	return {};
 }
 
 void Processes::execute() {
@@ -138,6 +154,14 @@ void Processes::ParseUserInput(const std::string& input) {
 }
 
 void Processes::executeWordCommands(std::string& command, std::string& value) {
+	//Execution checker;
+
+	/*
+
+			FIND FEATURE
+
+	*/
+
 	if (command == "find") {
 		if (value.empty()) {
 			std::cerr << "[!] find Requires A Process Name\n";
@@ -149,7 +173,13 @@ void Processes::executeWordCommands(std::string& command, std::string& value) {
 		findProcess(wstringValue);
 		return;
 	}
-		
+
+	/*
+
+			FILTER FEATURE
+
+	*/
+
 	else if (command == "filter") {
 		if (value.empty()) {
 			std::cerr << "[!] filter Requires A Process Name\n";
@@ -204,7 +234,7 @@ std::string Processes::findPath(int processID) {
 
 	if (hProcess == NULL) {
 		int errorCode = GetLastError();
-		if (errorCode == ERROR_ACCESS_DENIED) {
+		if (errorCode = ERROR_ACCESS_DENIED) {
 			std::cerr << "[-] Unable To Access This Process Due To Privaledges, Windows Doesn't Like It." << std::endl;
 			waitForEnter();
 			return {};
@@ -266,10 +296,11 @@ void Processes::executeCommand(userCommand com) {
 		std::cout << "\n\tCommands:\n" << std::endl;
 		std::cout << "\tpid (number)\tRetrieves Program Name Associated With The Process ID." << std::endl;
 		std::cout << "\tkill (pid)\tTerminates Specified Process." << std::endl;
-		std::cout << "\tfind (name.exe)\tFinds Processes PID" << std::endl;
+		std::cout << "\tfind (name.exe)\tFinds Processes PID (case-sensitive)." << std::endl;
 		std::cout << "\trefresh\t\tRefreshes The Screen To Update Results. This Also Can Be Used To Undo Filtered Results." << std::endl;
 		std::cout << "\tfilter (name.exe) Filters Processes To Only Display Processes Specified By The User." << std::endl;
 		std::cout << "\tpath (pid)\tShows The Full File Path Of A Running Process." << std::endl;
+		std::cout << "\tinfo (pid)\tGets Process's Uptime, CPU Usage, And Parent Process" << std::endl;
 		std::cout << "\tq\t\tQuits Application." << std::endl;
 		waitForEnter();
 		return;
@@ -281,6 +312,19 @@ void Processes::executeCommand(userCommand com) {
 	else if (com.command == ("q") || com.command == ("Q")) {
 		std::cout << "\nExiting..." << std::endl;
 		breakLoop = true;
+		return;
+	}
+	else if (com.command == ("info")) {
+		if (findPID(com.value)) {
+			std::wstring procName = getName(com.value);
+			if (procName.empty()) {
+				std::cerr << "[-] Couldn't Find Process" << std::endl;
+				return;
+			}
+			checkExecution.printProcessTimes(com.value, procName);
+			waitForEnter();
+		}
+
 		return;
 	}
 	else {
