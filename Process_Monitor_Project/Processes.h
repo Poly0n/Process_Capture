@@ -19,18 +19,19 @@ struct userCommand {
 class Processes
 {
 public:
-	~Processes();
+	Processes() = default;
+	virtual ~Processes();
 	void execute();
 	Execution checkExecution;
 private:
 	bool breakLoop = false;
 	bool cpuInitialized = false;
-	std::vector<Process> processSnapshot;
-	std::vector<Process> filteredSnapsot;
 	PDH_HQUERY cpuQuery;
 	PDH_HCOUNTER cpuTotal;
 	double cpuUsage;
 	DWORDLONG memoryUsage;
+	std::vector<Process> processSnapshot;
+	std::vector<Process> filteredSnapsot;
 
 	void GetProcesses();
 	void print();
@@ -41,9 +42,10 @@ private:
 	void ParseUserInput(const std::string& input);
 	void executeCommand(userCommand com);
 	void executeWordCommands(std::string& command, std::string& value);
-	void waitForEnter();
 	void killProcess(int processID);
+	void waitForEnter();
 	std::string findPath(int processID);
+	std::wstring getName(int processID);
 	bool findProcess(const std::wstring& processName);
 
 	bool findPID(int processID);
