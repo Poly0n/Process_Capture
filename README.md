@@ -20,7 +20,8 @@ This program captures your computer's activity like a snapshot. To get full use 
 
 ##  Preview
 
-<img width="1021" height="783" alt="image" src="https://github.com/user-attachments/assets/cca349d1-ce1c-4487-a5f0-c551a5000a00" />
+<img width="1076" height="569" alt="image" src="https://github.com/user-attachments/assets/3365c44b-d7e5-4953-8a42-e40b013dae08" />
+
 
 
 ### Prerequisites
