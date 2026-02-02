@@ -25,7 +25,8 @@ This program captures your computer's activity like a snapshot. To get full use 
 
 
 ### Prerequisites
-- C++20 compatible compiler (GCC, Clang, MSVC)
+- C++20 compatible compiler (GCC, MSVC)
+- Windows 10/11
 
 ### Installation
 
@@ -36,3 +37,13 @@ cd Process_Capture
 
 # Build the project
 g++ -std=c++20 -o ProcessMonitor Process_Monitor_Project.cpp Processes.cpp Execution.cpp -lpdh -lpsapi
+```
+### Testing
+
+```bash
+# Build Catch2 Test
+
+g++ -std=c++20 -I. -Itests tests/test_execution.cpp tests/catch_amalgamated.cpp Execution.cpp -o run_tests
+
+# Run Test File
+./run_tests.exe
