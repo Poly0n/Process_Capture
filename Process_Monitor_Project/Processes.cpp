@@ -8,13 +8,6 @@
 #include <Pdh.h>
 #include "Execution.h"
 
-/*
-
-	PROBLEMS:
-		when printing out filtered content you can still access other processes not listed (may not fix because who cares tbh)
-
-*/
-
 #pragma comment(lib, "pdh.lib")
 
 // Prevent possible overflow
