@@ -83,9 +83,9 @@ void Processes::execute() {
 }
 
 bool Processes::findProcess(const std::wstring& processName) {
-	
 	for (auto& [pid, proc] : processSnapshot) {
-		if (proc.processName == processName) {
+		
+		if (checkExecution.toLower(proc.processName) == checkExecution.toLower(processName)) {
 			std::wcout << "\n\t[+] Found Process: \n\tPID: ["
 				<< proc.pid << "] \n\tProcess Name:["
 				<< proc.processName << "]" << std::endl;
