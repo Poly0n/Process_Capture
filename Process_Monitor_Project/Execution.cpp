@@ -61,6 +61,14 @@ double Execution::fileTimeToSeconds(const FILETIME& ft) {
 	return fileTimeToULL(ft) / 10000000.0;
 }
 
+std::wstring Execution::toLower(std::wstring s) {
+	std::transform(s.begin(), s.end(), s.begin(),
+		[](wchar_t c) {
+			return std::towlower(c);
+		});
+	return s;
+}
+
 void Execution::GetParentProcessID(DWORD pid, bool reset = true) {
 	if (reset) {
 		ppidInfo.ppid = 0;
