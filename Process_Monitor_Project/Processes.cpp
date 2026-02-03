@@ -227,7 +227,7 @@ std::string Processes::findPath(int processID) {
 
 	if (hProcess == NULL) {
 		int errorCode = GetLastError();
-		if (errorCode = ERROR_ACCESS_DENIED) {
+		if (errorCode == ERROR_ACCESS_DENIED) {
 			std::cerr << "[-] Unable To Access This Process Due To Privaledges, Windows Doesn't Like It." << std::endl;
 			waitForEnter();
 			return {};
