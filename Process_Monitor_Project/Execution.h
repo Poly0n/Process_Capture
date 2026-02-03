@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <TlHelp32.h>
 #include <unordered_map>
+#include <algorithm>
+#include <cwctype>
 #include "Pdh.h"
 
 struct CpuSample {
@@ -25,6 +27,7 @@ private:
 	double fileTimeToSeconds(const FILETIME& ft);
 	ULONGLONG fileTimeToULL(const FILETIME& ft);
 public:
+	std::wstring toLower(std::wstring s);
 	bool oneLinerCommand(const std::string& input) const;
 	bool isNumber(const std::string& number) const;
 	bool wordCommands(const std::string& input) const;
