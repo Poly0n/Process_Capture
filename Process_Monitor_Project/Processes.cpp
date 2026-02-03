@@ -174,7 +174,7 @@ void Processes::executeWordCommands(std::string& command, std::string& value) {
 
 		std::wstring wstringValue = checkExecution.stringToWString(value);
 		for (const auto& [pid, proc] : processSnapshot) {
-			if (proc.processName == wstringValue)
+			if (checkExecution.toLower(proc.processName) == checkExecution.toLower(wstringValue))
 				filteredSnapsot.emplace(pid, proc);
 		}
 		if (filteredSnapsot.empty()) {
