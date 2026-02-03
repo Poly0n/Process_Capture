@@ -32,27 +32,29 @@ void Processes::waitForEnter() {
 }
 
 bool Processes::findPID(int processID) {
-	for (const auto& proc : processSnapshot) {
-		if (proc.pid == processID) {
-			std::wcout << L"\n\t[+] PID Found: " << processID
-				<< L" " << "\n\tProcess Name: [" << proc.processName <<
-				"]" << std::endl;
-			waitForEnter();
-			return true;
-		}
+	auto it = processSnapshot.find(processID);
+	if (it != processSnapshot.end()) {
+		const auto& proc = it->second;
+		std::wcout << L"\n\t[+] PID Found: " << proc.pid
+			<< L" " << "\n\tProcess Name: [" << proc.processName <<
+			"]" << std::endl;
+		waitForEnter();
+		return true;
 	}
-
-	std::cout << "[-] Couldn't find PID :(" << std::endl;
-	waitForEnter();
-	return false;
+	else {
+		std::cout << "[-] Couldn't find PID :(" << std::endl;
+		waitForEnter();
+		return false;
+	}
 }
 
 std::wstring Processes::getName(int processID)	{
-	for (const auto& proc : processSnapshot) {
-		if (proc.pid == processID) {
-			return proc.processName;
-		}
+	auto it = processSnapshot.find(processID);
+	if (it != processSnapshot.end()) {
+		const auto& proc = it->second;
+		return proc.processName;
 	}
+
 	return {};
 }
 
@@ -81,8 +83,9 @@ void Processes::execute() {
 }
 
 bool Processes::findProcess(const std::wstring& processName) {
-	for (const auto& proc : processSnapshot) {
-		if (_wcsicmp(proc.processName.c_str(), processName.c_str()) == 0) {
+	
+	for (auto& [pid, proc] : processSnapshot) {
+		if (proc.processName == processName) {
 			std::wcout << "\n\t[+] Found Process: \n\tPID: ["
 				<< proc.pid << "] \n\tProcess Name:["
 				<< proc.processName << "]" << std::endl;
@@ -90,7 +93,7 @@ bool Processes::findProcess(const std::wstring& processName) {
 			return true;
 		}
 	}
-
+	
 	std::cout << "[-] Couldn't Find Process" << std::endl;
 	waitForEnter();
 	return false;
@@ -147,14 +150,6 @@ void Processes::ParseUserInput(const std::string& input) {
 }
 
 void Processes::executeWordCommands(std::string& command, std::string& value) {
-	//Execution checker;
-
-	/*
-
-			FIND FEATURE
-
-	*/
-
 	if (command == "find") {
 		if (value.empty()) {
 			std::cerr << "[!] find Requires A Process Name\n";
@@ -167,12 +162,6 @@ void Processes::executeWordCommands(std::string& command, std::string& value) {
 		return;
 	}
 
-	/*
-
-			FILTER FEATURE
-
-	*/
-
 	else if (command == "filter") {
 		if (value.empty()) {
 			std::cerr << "[!] filter Requires A Process Name\n";
@@ -184,10 +173,9 @@ void Processes::executeWordCommands(std::string& command, std::string& value) {
 		filteredSnapsot.reserve(1000);
 
 		std::wstring wstringValue = checkExecution.stringToWString(value);
-		for (const auto& proc : processSnapshot) {
-			if (_wcsicmp(proc.processName.c_str(), wstringValue.c_str()) == 0) {
-				filteredSnapsot.push_back(proc);
-			}
+		for (const auto& [pid, proc] : processSnapshot) {
+			if (proc.processName == wstringValue)
+				filteredSnapsot.emplace(pid, proc);
 		}
 		if (filteredSnapsot.empty()) {
 			std::cout << "[-] Couldn't Find Process" << std::endl;
@@ -227,7 +215,7 @@ std::string Processes::findPath(int processID) {
 
 	if (hProcess == NULL) {
 		int errorCode = GetLastError();
-		if (errorCode == ERROR_ACCESS_DENIED) {
+		if (errorCode = ERROR_ACCESS_DENIED) {
 			std::cerr << "[-] Unable To Access This Process Due To Privaledges, Windows Doesn't Like It." << std::endl;
 			waitForEnter();
 			return {};
@@ -312,6 +300,7 @@ void Processes::executeCommand(userCommand com) {
 			std::wstring procName = getName(com.value);
 			if (procName.empty()) {
 				std::cerr << "[-] Couldn't Find Process" << std::endl;
+				waitForEnter();
 				return;
 			}
 			checkExecution.printProcessTimes(com.value, procName);
@@ -407,7 +396,7 @@ void Processes::GetProcesses() {
 		Process proc;
 		proc.pid = pe.th32ProcessID;
 		proc.processName = pe.szExeFile;
-		processSnapshot.push_back(proc);
+		processSnapshot.emplace(proc.pid, std::move(proc));
 
 		hResult = Process32NextW(hSnapshot, &pe);
 	}
@@ -426,15 +415,16 @@ void Processes::print() {
 	GetCurrentMemoryUsage();
 	GetCurrentCPUUsage();
 
-	for (size_t i = 0; i < processSnapshot.size(); ++i) {
-		std::cout << "Process ID: [" << processSnapshot[i].pid << "]";
-		std::wcout << "\tProcess Name: [" << processSnapshot[i].processName << "]\n" << std::endl;
+	for (auto& [pid, proc] : processSnapshot) {
+		std::cout << "Process ID: [" << proc.pid << "]";
+		std::wcout << "\tProcess Name: [" << proc.processName << "]\n" << std::endl;
 	}
 
 	std::cout << "-----------------------------------" << std::endl;
 	std::cout << "CPU Usage: " << cpuUsage << "%" << std::endl;
 	std::cout << "Memory Usage: " << memoryUsage << " GB" << std::endl;
 	std::cout << "Total Processes: " << processSnapshot.size() << "\n" << std::endl;
+	
 }
 
 void Processes::filteredPrint() {
@@ -442,12 +432,12 @@ void Processes::filteredPrint() {
 	system("cls");
 	GetCurrentMemoryUsage();
 	GetCurrentCPUUsage();
-
-	for (size_t i = 0; i < filteredSnapsot.size(); ++i) {
-		std::cout << "Process ID: [" << filteredSnapsot[i].pid << "]";
-		std::wcout << "\tProcess Name: [" << filteredSnapsot[i].processName << "]\n" << std::endl;
+	
+	for (auto& [pid, proc] : filteredSnapsot) {
+		std::cout << "Process ID: [" << proc.pid << "]";
+		std::wcout << "\tProcess Name: [" << proc.processName << "]\n" << std::endl;
 	}
-
+	
 	std::cout << "-----------------------------------" << std::endl;
 	std::cout << "CPU Usage: " << cpuUsage << "%" << std::endl;
 	std::cout << "Memory Usage: " << memoryUsage << " GB" << std::endl;
