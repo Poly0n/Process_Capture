@@ -5,6 +5,7 @@
 #include <vector>
 #include <TlHelp32.h>
 #include <Pdh.h>
+#include <unordered_map>
 
 struct Process {
 	int pid;
@@ -30,8 +31,8 @@ private:
 	PDH_HCOUNTER cpuTotal;
 	double cpuUsage;
 	DWORDLONG memoryUsage;
-	std::vector<Process> processSnapshot;
-	std::vector<Process> filteredSnapsot;
+	std::unordered_map<DWORD, Process> processSnapshot;
+	std::unordered_map<DWORD, Process> filteredSnapsot;
 
 	void GetProcesses();
 	void print();
