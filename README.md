@@ -1,7 +1,6 @@
 #  Windows Procces Capture
 
-As i'm sure all us Windows Users know, Microsoft hasn't done well in performance or ease of use these days.
-So I decided to take make a alternative that strives to give users insight into their computer resources
+I decided to take make a alternative that strives to give users insight into their computer resources
 and running processes without the slow and janky task manager, or if you just like using console apps more!
 This app is a work-in-progress.
 
