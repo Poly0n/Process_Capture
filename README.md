@@ -1,8 +1,7 @@
 #  Windows Procces Capture
 
 I decided to take make a alternative to Task Manager that strives to give users insight into their computer resources
-and running processes without the slow and janky task manager, or if you just like using console apps more!
-This app is a work-in-progress.
+and running processes without the slow and jankyness of it, or if you just like using console apps more!
 
 This program captures your computer's activity like a snapshot. To get full use out of it, please use the following commands:
 
