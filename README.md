@@ -1,6 +1,6 @@
 #  Windows Procces Capture
 
-I decided to take make a alternative that strives to give users insight into their computer resources
+I decided to take make a alternative to Task Manager that strives to give users insight into their computer resources
 and running processes without the slow and janky task manager, or if you just like using console apps more!
 This app is a work-in-progress.
 
